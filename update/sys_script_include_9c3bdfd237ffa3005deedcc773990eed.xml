@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sys_script_include">
+    <sys_script_include action="INSERT_OR_UPDATE">
+        <access>public</access>
+        <active>true</active>
+        <api_name>x_303301_jira_inte.JiraUtilities</api_name>
+        <client_callable>false</client_callable>
+        <description/>
+        <name>JiraUtilities</name>
+        <script><![CDATA[var JiraUtilities = Class.create();
+JiraUtilities.prototype = {
+    initialize: function() {
+    },
+	getMidServer: function(sName, sContains) {
+		var grMS = new GlideRecord('ecc_agent');
+		grMS.addQuery('name', sName);
+		grMS.addQuery('validated', 'true');
+		grMS.addQuery('status', 'Up');
+		grMS.query();
+		if (grMS.next()) {
+			return grMS.name;
+		} else {
+			grMS = new GlideRecord('ecc_agent');
+			grMS.addEncodedQuery('nameLIKE' + sContains + '^statusSTARTSWITHup^validatedINtrue');
+			grMS.query();
+			if (grMS.next()) {
+				return grMS.name;
+			}
+		}
+	},
+
+    type: 'JiraUtilities'
+};]]></script>
+        <sys_class_name>sys_script_include</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2019-02-25 20:16:01</sys_created_on>
+        <sys_id>9c3bdfd237ffa3005deedcc773990eed</sys_id>
+        <sys_mod_count>1</sys_mod_count>
+        <sys_name>JiraUtilities</sys_name>
+        <sys_package display_value="Jira Integration" source="x_303301_jira_inte">2473559d377323005deedcc773990ed8</sys_package>
+        <sys_policy>read</sys_policy>
+        <sys_scope display_value="Jira Integration">2473559d377323005deedcc773990ed8</sys_scope>
+        <sys_update_name>sys_script_include_9c3bdfd237ffa3005deedcc773990eed</sys_update_name>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2019-02-25 20:16:25</sys_updated_on>
+    </sys_script_include>
+</record_update>

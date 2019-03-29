@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sys_index">
+    <sys_index action="INSERT_OR_UPDATE">
+        <col_name_string>project_id</col_name_string>
+        <index_col_name element="project_id" name="x_303301_jira_inte_project">f32f159937b323005deedcc773990e31</index_col_name>
+        <logical_table_name>x_303301_jira_inte_project</logical_table_name>
+        <sys_class_name>sys_index</sys_class_name>
+        <sys_created_by>system</sys_created_by>
+        <sys_created_on>2019-02-22 08:51:09</sys_created_on>
+        <sys_id>f0c1a51d37b323005deedcc773990e28</sys_id>
+        <sys_mod_count>0</sys_mod_count>
+        <sys_name>x_303301_jira_inte_project</sys_name>
+        <sys_package display_value="Jira Integration" source="x_303301_jira_inte">2473559d377323005deedcc773990ed8</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="Jira Integration">2473559d377323005deedcc773990ed8</sys_scope>
+        <sys_update_name>sys_index_x_303301_jira_inte_project_project_id</sys_update_name>
+        <sys_updated_by>system</sys_updated_by>
+        <sys_updated_on>2019-02-22 08:51:09</sys_updated_on>
+        <table display_value="Project" name="x_303301_jira_inte_project">262fd19937b323005deedcc773990ed3</table>
+        <unique_index>false</unique_index>
+    </sys_index>
+</record_update>

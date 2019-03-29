@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?><database>
+    <element label="User" max_length="40" name="x_303301_jira_inte_user" type="collection">
+        <element label="Account ID" max_length="40" name="account_id" type="string"/>
+        <element label="Active" max_length="40" name="active" type="boolean"/>
+        <element label="Display Name" max_length="255" name="display_name" type="string"/>
+        <element label="Email Address" max_length="255" name="email_address" type="string"/>
+        <element label="Key" max_length="40" name="key" type="string"/>
+        <element label="Name" max_length="255" name="name" type="string"/>
+        <index name="index">
+            <element name="account_id"/>
+        </index>
+    </element>
+</database>

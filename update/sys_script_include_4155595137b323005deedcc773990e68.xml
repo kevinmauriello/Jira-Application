@@ -1,0 +1,542 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sys_script_include">
+    <sys_script_include action="INSERT_OR_UPDATE">
+        <access>public</access>
+        <active>true</active>
+        <api_name>x_303301_jira_inte.JiraIntegration</api_name>
+        <client_callable>false</client_callable>
+        <description/>
+        <name>JiraIntegration</name>
+        <script><![CDATA[var JiraIntegration = Class.create();
+JiraIntegration.prototype = {
+    initialize: function() {
+		this.enabled = gs.getProperty('x_303301_jira_inte.enabled');
+		this.endPoint = gs.getProperty('x_303301_jira_inte.endpoint');
+		this.jiraUser = gs.getProperty('x_303301_jira_inte.jirauser');
+		this.jiraPwd = gs.getProperty('x_303301_jira_inte.jirapwd');
+		this.midServer = gs.getProperty('x_303301_jira_inte.midserver');
+		this.verbose = gs.getProperty('x_303301_jira_inte.logging');
+		this.servicenow_field = gs.getProperty('x_303301_jira_inte.ServiceNow.Field');
+		this.logText = '';
+    },
+
+	_callREST: function(sEndPoint, sMethod, sInBody, sSysID) {
+		var oJSON = {};
+		try {
+			var request = new sn_ws.RESTMessageV2();
+			request.setHttpMethod(sMethod);
+			request.setEndpoint(this.endPoint + sEndPoint);
+			request.setRequestHeader('Content-Type', 'application/json');
+			request.setRequestHeader('Accept', 'application/json');
+
+			// if a mid server is defined, set the REST mid server
+			// and set the ecc correelator to the records sysID (if passed in)
+			if (!gs.nil(this.midServer)) {
+				request.setMIDServer(this.midServer);
+				if (!gs.nil(sSysID))
+					request.setEccCorrelator(sSysID);
+			}
+
+			// if a body is passed in put it in the REST message
+			if (!gs.nil(sInBody)) {
+				this.debug('inBody ' + sInBody);
+				request.setRequestBody(sInBody);
+			}
+
+			request.setBasicAuth(this.jiraUser, this.jiraPwd);
+			var response = request.execute();
+			var sStatus = response.getStatusCode();
+			var sBody = response.getBody();
+			var sHeaders = response.getHeaders();
+			oJSON.status = sStatus.toString();
+			oJSON.body = JSON.parse(sBody);
+			oJSON.headers = sHeaders;
+		} catch (ex) {
+			this.debug('_callREST ERROR: ' + ex, true);
+		} finally {
+			return oJSON;
+		}
+	},
+	_buildIssueBody: function(current, sProjectKey, bInsert) {
+		var sTable = current.getTableName();
+		this.debug('buildIssueBody: sTable: ' + sTable + ' Insert: ' + bInsert);
+		var grData = null;
+		var issue = {};
+		var bFieldChanged = false;
+		var bAnyFieldsChanged = false;
+
+		try {
+			issue.fields = {};
+			issue.fields.project = {};
+			issue.fields.project.key = sProjectKey;
+			if (bInsert) {
+//				issue.fields.reporter = {};
+//				issue.fields.reporter.name = 'kevin.mauriello';
+			}
+			issue.fields.issuetype = {};
+			issue.fields.issuetype.name = null;
+			var sVal = '';
+
+			// query the field mapping table based on:
+			// Jira Configuration, Table and insert or update
+			var grM = new GlideRecord('x_303301_jira_inte_field_mapping');
+			grM.addEncodedQuery('active=true^servicenow_table.name=' + sTable);
+			if (bInsert)
+				grM.addQuery('on_insert', true);
+			else
+				grM.addQuery('on_update', true);
+			grM.orderBy('process_order');
+			grM.query();
+
+			// walk through all available fields and build the JSON to send to Jira
+			while (grM.next()) {
+				if (gs.nil(issue.fields.issuetype.name)) {
+					issue.fields.issuetype.name = grM.jira_issue_type.getDisplayValue();
+				}
+
+				sVal = '';
+				bFieldChanged = true;
+//				if (bInsert)
+//					bFieldChanged = true;
+//				else
+//					bFieldChanged = current[grM.servicenow_field.toString()].changes();
+
+				if (bFieldChanged) {
+					bAnyFieldsChanged = true;
+					this.debug(grM.servicenow_field + ' changed');
+
+					// if we are NOT dot walking to the filed value just take the value
+					// otherwise use the getValue function
+					if (gs.nil(grM.dot_walk_field))
+						sVal = current.getValue(grM.servicenow_field);
+					else
+						sVal = current[grM.servicenow_field].getDisplayValue();
+					this.debug('field: ' + grM.servicenow_field + ' -> ' + grM.jira_field + ', '  + sVal);
+
+					// if we have a field value and the filed is NOT a transition field put it in the JSON
+					if (!gs.nil(sVal) && 
+						(grM.jira_field.toLowerCase() != 'status')) {
+						this.debug('processing ' + grM.jira_field);
+						issue.fields[grM.jira_field] = {};
+						if (!gs.nil(grM.jira_field_key)) {
+							var grCH = null;
+							if (grM.jira_field.toLowerCase() == 'priority') {
+								grCH = this.getJiraChoice(sTable, 'Priority', current.priority);
+								if (!gs.nil(grCH)) {
+									issue.fields[grM.jira_field][grM.jira_field_key] = grCH.jira_choice_id.toString();
+								}
+							} else {
+								issue.fields[grM.jira_field][grM.jira_field_key] = sVal.toString();
+							}
+						} else {
+							issue.fields[grM.jira_field] = sVal.toString();
+						}
+					}
+				} else {
+					this.debug(grM.servicenow_field + ' did not change');
+				}
+			}
+		} catch(ex) {
+			this.debug( 'ERROR buildIssueBody: ' + ex);
+			this.addJiraException(current.number, 'Function failed, buildIssueBody: ' + ex, 'NA', 'NA', 'NA');
+		} finally {
+			if (!bAnyFieldsChanged)
+				return null;
+			else
+				return issue;
+		}
+	},
+	createJiraIssue : function(current, sProjectKey) {
+		var jiraIssue = null;
+		try {
+			this.debug('Creating Jira Issue');
+			var issue = this._buildIssueBody(current, sProjectKey, true);
+			if (!gs.nil(issue)) {
+				this.debug(JSON.stringify(issue));
+				jiraIssue = this._callREST('rest/api/2/issue', 'post', JSON.stringify(issue), current.sys_id);
+				this.debug("Create Issue, Returned from Jira: " + JSON.stringify(jiraIssue));
+				if (jiraIssue.status.toString() == '201') {
+					this.debug('sending transition');
+					var grCH = this.getJiraChoice(current.getTableName(), 'State', current.state);
+					if (!gs.nil(grCH)) {
+						var oData = { "transition" : { "id" : grCH.jira_choice_id.toString() }};
+						var oTransition = this._callREST('rest/api/2/issue/' + 
+														 jiraIssue.body.key.toString() + 
+														 '/transitions', 'post', JSON.stringify(oData),'');
+						this.debug("Set Transition, Returned from Jira: " + JSON.stringify(oTransition));
+					}
+					//this.processWorkNotes(current, jiraIssue.body.key.toString());
+					//this.processComments(current, jiraIssue.body.key.toString());
+				}
+			}
+		} catch(ex) {
+			this.debug('ERROR (createJiraIssue): ' + ex);
+			this.addJiraException(current.number, 'Function failed, createJiraIssue: ' + ex, 'NA', 'NA', 'NA');
+		} finally {
+			return jiraIssue;
+		}
+	},
+	modifyJiraIssue : function(current, sProjectKey) {
+		var jiraIssue = null;
+		try {
+			this.debug('Modifying Jira Issue ' + current.correlation_id);
+			var oIssue = this._buildIssueBody(current, sProjectKey, false);
+			if (!gs.nil(oIssue))
+				jiraIssue = this._callREST("/rest/api/2/issue/" + current.correlation_id.toString(), "put", JSON.stringify(oIssue), "");
+		} catch(ex) {
+			this.debug('ERROR (modifyJiraIssue): ' + ex, true);
+			this.addJiraException(current.number, 'Function failed, modifyJiraIssue: ' + ex, 'NA', 'NA', 'NA');
+		} finally {
+			return jiraIssue;
+		}
+	},
+	processWorkNotes: function(current, sKey) {
+		var arJiraComments = [];
+		var arWorkNotes = [];
+		try {
+			arJiraComments = this.getJiraComments(sKey);
+			for (var i=0; i < arJiraComments.length; i++)
+				this.debug(arJiraComments);
+			arWorkNotes = this.getServiceNowWorkNotes(current);
+			for (var wn=0; wn < arWorkNotes.length; wn++)
+				this.debug(arWorkNotes);
+		} catch(ex) {
+			this.debug('ERROR processWorkNotes: ' + ex, true);
+		} finally {
+		}
+	},
+	processComments: function (current) {
+		try {
+		} catch(ex) {
+			this.debug('ERROR processComments: ' + ex, true);
+		} finally {
+		}
+	},
+	getServiceNowWorkNotes: function(current) {
+		var arWorkNotes = [];
+		try {
+			var grWN = new GlideRecord('sys_journal_field');
+			grWN.addEncodedQuery("element=work_notes" + 
+								 "^name=" + current.getTableName() +
+								 "^element_id=" + current.sys_id);
+			grWN.query();
+			this.debug('work notes returned ' + grWN.getRowCount());
+			while (grWN.next()) {
+				arWorkNotes.push(grWN.value.replace('[code]','').replace('[/code]',''));
+			}	
+		} catch(ex) {
+			this.debug('ERROR in getServiceNowWorkNotes ' + ex, true);
+		} finally {
+			return arWorkNotes;
+		}
+	},
+	getJiraComments: function(sIssueKey) {
+		var arComments = [];
+		try {
+			var oData = this._callREST('rest/api/2/issue/' + sIssueKey + '/comment', 'get', '','');
+			for (var i=0; i < oData.body.comments.length; i++) {
+				arComments.push(oData.body.comments[i].body.toString());
+			}
+		} catch(ex) {
+			this.debug('ERROR in getJiraComments ' + ex, true);
+		} finally {
+			return arComments;
+		}
+	},
+	addCommentToJira: function(sKey, sComment) {
+		try {
+			var oComment = { "body" : oComment.body = sComment };
+			var oData = this._callREST('rest/api/2/issue/' + sKey + '/comment', 'post', JSON.stringify(oComment),'');
+			this.debug(JSON.stringify(oData));
+		} catch(ex) {
+			this.debug('ERROR in getJiraComments ' + ex, true);
+		}
+	},
+	processInbound: function(sData) {
+		var oJSON = {};
+		try {
+			var oData = JSON.parse(sData);
+			var grUpdateRec = null;
+			var grFieldMapRec = null;
+			var sSNKey = "";
+			var sJiraIssueType = "";
+
+			this.debug("Received: " + sData);
+			if (!gs.nil(oData.issue.key))
+				this.debug('processInbound: Key: ' + oData.issue.key.toString());
+			else {
+				oJSON.status = 400;
+				oJSON.message = "Issue Key does not exist in JSON";
+				this.debug("Issue Key does not exist in JSON");
+				return oJSON;
+			}
+			if (!gs.nil(oData.issue.fields[this.servicenow_field]))
+				sSNKey = oData.issue.fields[this.servicenow_field].toString();
+			else {
+				oJSON.status = 400;
+				oJSON.message = "Field Does Not Exist: " + this.servicenow_field;
+				this.debug("Field Does Not Exist: " + this.servicenow_field);
+				return oJSON;
+			}
+			if (!gs.nil(oData.issue.fields.issuetype.name))
+				sJiraIssueType = oData.issue.fields.issuetype.name.toString();
+			else {
+				oJSON.status = 400;
+				oJSON.message = "IssueType does not exist in JSON";
+				this.debug("IssueType does not exist in JSON");
+				return oJSON;
+			}
+			this.debug('ServiceNow Record: ' + sSNKey);
+			this.debug('Jira Issue Type: ' + sJiraIssueType);
+
+			if (oData.webhookEvent.toString() == 'attachment_created' ||
+				oData.webhookEvent.toString() == 'attachment_deleted')
+				return;
+
+			if (oData.webhookEvent.toString() == 'comment_created') {
+			} else if (oData.webhookEvent.toString() == 'comment_deleted') {
+			} else if (oData.webhookEvent.toString() == 'comment_updated') {
+			} else if (oData.webhookEvent.toString() == 'jira:issue_updated') {
+				grUpdateRec = this.getSNRecord(sSNKey);
+				if (!gs.nil(grUpdateRec)) {
+					this.debug("ServiceNow Table: " + grUpdateRec.getTableName());
+					var oUpdateItems = oData.changelog.items;
+
+					for (var iUpd=0; iUpd < oUpdateItems.length; iUpd++) {
+						var sJiraFieldID = "";
+						var sJiraTo = "";
+						var sJiraToString = "";
+						if (!gs.nil(oUpdateItems[iUpd].fieldtype))
+							this.debug("Field Type: " + oUpdateItems[iUpd].fieldtype.toString());
+						if (!gs.nil(oUpdateItems[iUpd].fieldId)) { sJiraFieldID = oUpdateItems[iUpd].fieldId.toString(); }
+						if (!gs.nil(oUpdateItems[iUpd].to)) { sJiraTo = oUpdateItems[iUpd].to.toString(); }
+						if (!gs.nil(oUpdateItems[iUpd].toString)) { sJiraToString = oUpdateItems[iUpd].toString.toString(); }
+						if (!gs.nil(sJiraIssueType) && !gs.nil(sJiraFieldID)) {
+							grFieldMapRec = this.getSNFieldToUpdate(grUpdateRec.getTableName(), sJiraIssueType, sJiraFieldID);
+							if (!gs.nil(grFieldMapRec)) {
+								var grData = null;
+								if (grFieldMapRec.servicenow_field.toLowerCase() == "state") {
+									grData = this.getServiceNowChoice(grUpdateRec.getTableName(), "state", sJiraToString);
+									if (!gs.nil(grData)) {
+										this.debug("setting state to: " + grData.servicenow_choice_value);
+										grUpdateRec[grFieldMapRec.servicenow_field] = grData.servicenow_choice_value;
+									}
+								} else if (grFieldMapRec.servicenow_field.toLowerCase() == "priority") {
+									grData = this.getServiceNowChoice(grUpdateRec.getTableName(), "priority", sJiraToString);
+									if (!gs.nil(grData)) {
+										this.debug("setting priority to: " + grData.servicenow_choice_value);
+										grUpdateRec[grFieldMapRec.servicenow_field] = grData.servicenow_choice_value;
+									}
+								}
+								this.debug("Updating " + grFieldMapRec.servicenow_field + " To " + sJiraToString);
+								grUpdateRec[grFieldMapRec.servicenow_field] = sJiraToString;
+							} else {
+								this.debug("Field Mapping Not Defined: " + sJiraFieldID);
+							}
+						} else {
+							this.debug("Unable to retrieve field map data 2");
+						}
+					}
+					grUpdateRec.update();
+				} else {
+					this.debug("ServiceNow Record " + sSNKey + " Not Found.");
+				}
+			} else if (oData.webhookEvent.toString() == 'jira:issue_created') {
+			}
+
+		} catch(ex) {
+			this.debug('ERROR processInbound: ' + ex, true);
+		} finally {
+		}
+	},
+	getSNRecord: function(sNumber) {
+		var sTable = "";
+		var grData = null;
+		try {
+			if (sNumber.toUpperCase().substring(0,3) == "INC") { sTable = "incident"; }
+			else if (sNumber.toUpperCase().substring(0,3) == "PRB") { sTable = "problem"; }
+
+			if (!gs.nil(sTable)) {
+				grData = new GlideRecord(sTable);
+				grData.addQuery("number", sNumber);
+				grData.query();
+				if (grData.hasNext())
+					grData.next();
+				else
+					grData = null;
+			}
+		} catch(ex) {
+			this.debug("ERROR in getSNRecord: " + ex);
+		} finally {
+			return grData;
+		}
+	},
+	getSNFieldToUpdate: function(sTable, sJiraIssueType, sJiraField) {
+		var grData = null;
+		var sQuery = "active=true" +
+					"^servicenow_table.name=" + sTable +
+					"^jira_issue_type.issue_type_name=" + sJiraIssueType +
+					"^jira_field=" + sJiraField;
+		this.debug("getSNFieldToUpdate: " + sQuery);
+		try {
+			grData = new GlideRecord('x_303301_jira_inte_field_mapping');
+			grData.addEncodedQuery(sQuery);
+			grData.orderBy('process_order');
+			grData.query();
+			if (grData.hasNext())
+				grData.next();
+			else
+				grData = null;
+		} catch(ex) {
+			this.debug("ERROR in getSNFieldToUpdate: " + ex);
+		} finally {
+			return grData;
+		}
+	},
+	// current is the attachment GlideRecord
+	// grData is the GlideRecord of the table the attachment was placed on
+	addAttachmentToJira: function(current, grData) {
+		var bSendIt = true;
+		var ja = new JiraAttachments();
+		try {
+			var oData = this._callREST("rest/api/2/issue/" + grData.correlation_id, "get", "", "");
+			var oAttachment = oData.body.fields.attachment;
+			for (var i=0; i < oAttachment.length; i++) {
+				if (current.file_name == oAttachment[i].filename) {
+					this.debug('validating ' + current.file_name + ' found !!');
+					bSendIt = false;
+				} else {
+					this.debug('validating ' + current.file_name + ' Not found');
+				}
+			}
+			if (bSendIt) {
+				this.debug('sending file to Jira ' + current.file_name);
+				ja.saveSNAttachmentInJira(current.sys_id.toString(), 
+										  grData.correlation_id);
+			} else {
+				this.debug('not sending ' + current.file_name + ' to Jira');
+			}
+		} catch(ex) {
+			this.debug('ERROR in addAttachmentToJira: ' + ex);
+		}
+	},
+	// current is the attachment GlideRecord
+	// grData is the GlideRecord of the table the attachment was placed on
+	removeAttachmentFromJira: function(current, grData) {
+		var sID = "-1";
+		var ja = new JiraAttachments();
+		try {
+			var oData = this._callREST("rest/api/2/issue/" + grData.correlation_id, "get", "", "");
+			var oAttachment = oData.body.fields.attachment;
+			for (var i=0; i < oAttachment.length; i++) {
+				if (current.file_name == oAttachment[i].filename) {
+					this.debug('validating ' + current.file_name + ' found !!');
+					sID = oAttachment[i].id.toString();
+				} else {
+					this.debug('validating ' + current.file_name + ' Not found');
+				}
+			}
+			if (sID != "-1") {
+				this.debug('deleting Jira attachment ' + sID);
+				var oDelete = this._callREST("rest/api/2/attachment/" + sID, "delete", "", "");
+				this.debug(JSON.stringify(oDelete));
+			} else {
+				this.debug('not sending ' + current.file_name + ' to Jira');
+			}
+		} catch(ex) {
+			this.debug('ERROR in removeAttachmentFromJira: ' + ex);
+		}
+	},
+	setJiraStatus : function( sStatus, sKey ) {
+		var oData = {};
+
+		try {
+			var status = {};
+			status.transition = {};
+			status.transition.id = sStatus;
+			oData = this._callREST("rest/api/2/issue/" + sKey + "/transitions", "post", JSON.stringify(status),"");
+			this.debug("setJiraStatus: " + JSON.stringify(oData));
+		} catch(ex) {
+			this.debug('ERROR in setJiraStatus: ' + ex, true);
+		} finally {
+			return oData;
+		}
+	},
+	getJiraChoice: function(sServiceNowTable, sChoiceType, sChoiceValue) {
+		var grRET = null;
+
+		try {
+			var grCH = new GlideRecord('x_303301_jira_inte_choice_mapping');
+			grCH.addQuery('servicenow_table.name', sServiceNowTable);
+			grCH.addQuery('choice_type', sChoiceType);
+			grCH.addQuery('servicenow_choice_value', sChoiceValue);
+			grCH.query();
+			if (grCH.next())
+				grRET = grCH;
+			else {
+				this.debug('servicenow_table.name: ' + sServiceNowTable + ', ' +
+						   'choice_type: ' + sChoiceType + ', ' +
+						   'servicenow_choice_value: ' +sChoiceValue);
+				this.debug('Jira Choice NOT FOUND');
+			}
+		} catch (ex) {
+			this.debug('ERROR in getJiraChoice ' + ex, true);
+		} finally {
+			return grRET;
+		}
+	},
+	getServiceNowChoice: function(sServiceNowTable, sChoiceType, sChoiceLName) {
+		var grRET = null;
+
+		try {
+			var grCH = new GlideRecord('x_303301_jira_inte_choice_mapping');
+			grCH.addQuery('servicenow_table.name', sServiceNowTable);
+			grCH.addQuery('choice_type', sChoiceType);
+			grCH.addQuery('jira_choice_name', sChoiceLName);
+			grCH.query();
+			if (grCH.next())
+				grRET = grCH;
+		} catch (ex) {
+			this.debug('ERROR in getServiceNowChoice ' + ex, true);
+		} finally {
+			return grRET;
+		}
+	},
+	addJiraException: function(sControlNumber, sErrorMessage, sJiraBody, sJiraIssueKey, sJiraProject) {
+		try {
+			var grE = new GlideRecord('x_303301_jira_inte_exception');
+			grE.initialize();
+			grE.control_number = sControlNumber;
+			grE.error_message = sErrorMessage;
+			grE.jira_body = sJiraBody;
+			grE.jira_issue_key = sJiraIssueKey;
+			grE.jira_project = sJiraProject;
+			grE.insert();
+		} catch(ex) {
+			this.debug('ERROR addJiraException: ' + ex, true);
+		}
+	},
+	debug: function(sMsg, force) {
+		var bSaveMsg = (force == true || this.verbose == 'true');
+		if (bSaveMsg)
+			this.logText += sMsg + '\n';
+	},
+	sendToLog: function() {
+		if (!gs.nil(this.logText))
+			gs.info(this.logText);
+	},
+    type: 'JiraIntegration'
+};]]></script>
+        <sys_class_name>sys_script_include</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2019-02-22 07:57:59</sys_created_on>
+        <sys_id>4155595137b323005deedcc773990e68</sys_id>
+        <sys_mod_count>84</sys_mod_count>
+        <sys_name>JiraIntegration</sys_name>
+        <sys_package display_value="Jira Integration" source="x_303301_jira_inte">2473559d377323005deedcc773990ed8</sys_package>
+        <sys_policy>read</sys_policy>
+        <sys_scope display_value="Jira Integration">2473559d377323005deedcc773990ed8</sys_scope>
+        <sys_update_name>sys_script_include_4155595137b323005deedcc773990e68</sys_update_name>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2019-03-29 00:15:38</sys_updated_on>
+    </sys_script_include>
+</record_update>

@@ -1,0 +1,138 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sys_script_include">
+    <sys_script_include action="INSERT_OR_UPDATE">
+        <access>public</access>
+        <active>true</active>
+        <api_name>x_303301_jira_inte.JiraAttachments</api_name>
+        <client_callable>false</client_callable>
+        <description/>
+        <name>JiraAttachments</name>
+        <script><![CDATA[var JiraAttachments = Class.create();
+JiraAttachments.prototype = {
+	initialize: function() {
+		this.jira = new x_303301_jira_inte.JiraIntegration();
+	},
+	saveJiraAttachmentInSN: function(targetInstanceURL, sTable, sSysID, sFile) {
+		var targetUserID = this.jira.jiraUser;
+		var targetUserPassword = this.jira.jiraPwd;
+		try {
+			var attachmentMessage = new sn_ws.RESTMessageV2();
+			attachmentMessage.setHttpMethod("get");
+			attachmentMessage.setBasicAuth(targetUserID, targetUserPassword);
+			attachmentMessage.setEndpoint(targetInstanceURL);
+			attachmentMessage.saveResponseBodyAsAttachment(sTable, sSysID, sFile);
+			var response = attachmentMessage.execute();
+			var sStatus = response.getStatusCode();
+			if (sStatus != '200')
+				this.jira.debug(response.getErrorMessage());
+			else
+				this.jira.debug('attachment saved: ' + sFile);
+		} catch(ex) {
+			this.jira.debug('ERROR in saveJiraAttachmentInSN ' + ex, true);
+		} finally {
+			this.jira.sendToLog();
+		}
+	},
+	_createLocalAttachment: function(sAttachmentSysID, sFileName) {
+		var oData = {};
+		try {
+			var restMessage = new sn_ws.RESTMessageV2();
+			restMessage.setHttpMethod("get");
+			restMessage.setEndpoint(gs.getProperty('glide.servlet.uri') + "api/x_303301_jira_inte/multipartattachment/" + sAttachmentSysID);
+			restMessage.setBasicAuth(this.jira.jiraUser, this.jira.jiraPwd);
+			restMessage.saveResponseBodyAsAttachment('sys_attachment', sAttachmentSysID, sFileName);
+
+			var response = restMessage.execute();
+			oData.status = response.getStatusCode();
+			oData.headers = response.getHeaders();
+			oData.errorCode = response.getErrorCode();
+			oData.errorMessage = response.getErrorMessage();
+			oData.AttachmentSysID = response.getResponseAttachmentSysid().toString();
+		} catch(ex) {
+			this.jira.debug('ERROR in _createLocalAttachment: ' + ex);
+		} finally {
+			this.jira.debug('_createLocalAttachment: ' + JSON.stringify(oData));
+			return oData;
+		}
+	},
+	_sendAttachmentToJira: function(key, boundary, oCreated) {
+		var oData = {};
+		try {
+			var restMessage = new sn_ws.RESTMessageV2();
+			restMessage.setHttpMethod("post");
+			restMessage.setEndpoint(this.jira.endPoint + "rest/api/2/issue/" + key + "/attachments");
+			restMessage.setBasicAuth(this.jira.jiraUser, this.jira.jiraPwd);
+			restMessage.setRequestHeader('X-Atlassian-Token', 'no-check');
+			restMessage.setRequestHeader('Content-Type', 'multipart/form-data; boundary=' + boundary);
+			restMessage.setRequestBodyFromAttachment(oCreated.AttachmentSysID.toString());
+			var response = restMessage.execute();
+			oData.status = response.getStatusCode();
+			oData.headers = response.getHeaders();
+			oData.body = JSON.parse(response.getBody());
+			oData.errorCode = response.getErrorCode();
+			oData.errorMessage = response.getErrorMessage();
+		} catch(ex) {
+			this.jira.debug('ERROR in _sendAttachmentToJira: ' + ex);
+		} finally {
+			this.jira.debug('_sendAttachmentToJira: ' + JSON.stringify(oData));
+			return oData;
+		}
+	},
+	saveSNAttachmentInJira : function( attachment, key) {
+		var oCreateLocal = {};
+		var oCreateJira = {};
+		var grAT = new GlideRecord("sys_attachment");
+
+		try {
+			if (grAT.get(attachment)) {
+				var ga = new GlideSysAttachment();
+				var digest = new GlideDigest();
+				var attachmentStream = ga.getContentStream(attachment);
+				var boundary = digest.getMD5HexFromInputStream(attachmentStream);
+				var file_name = grAT.file_name;
+				var content_type = grAT.content_type;
+
+				oCreateLocal = this._createLocalAttachment(attachment, file_name);
+				if (oCreateLocal.status.toString() == '200') {
+					oCreateJira = this._sendAttachmentToJira(key, boundary, oCreateLocal);
+					if (oCreateJira.status.toString() != '200') {
+						this.jira.debug('ERROR creating Jira attachment');
+					}
+				} else {
+					this.jira.debug('ERROR creating local attachment');
+				}
+			} else {
+				this.jira.debug("Could not find sys_attachment record for sys_id " + attachment);
+			}
+		} catch(ex) {
+			this.jira.debug('ERROR in saveSNAttachmentInJira ' + ex);
+		} finally {
+			if (oCreateLocal.status.toString() == '200') {
+				try {
+					var grATT = new GlideRecord('sys_attachment');
+					if (grATT.get(oCreateLocal.AttachmentSysID.toString())) {
+						this.jira.debug('deleting temporary attachment: ' + oCreateLocal.AttachmentSysID.toString());
+						grATT.deleteRecord();
+					}
+				} catch(ex1) {
+					this.jira.debug("ERROR deleting temporary attachment");
+				}
+			}
+			this.jira.sendToLog();
+		}
+    },
+    type: 'JiraAttachments'
+};]]></script>
+        <sys_class_name>sys_script_include</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2019-03-27 15:51:39</sys_created_on>
+        <sys_id>1c4db8c8376033005deedcc773990ef2</sys_id>
+        <sys_mod_count>6</sys_mod_count>
+        <sys_name>JiraAttachments</sys_name>
+        <sys_package display_value="Jira Integration" source="x_303301_jira_inte">2473559d377323005deedcc773990ed8</sys_package>
+        <sys_policy>read</sys_policy>
+        <sys_scope display_value="Jira Integration">2473559d377323005deedcc773990ed8</sys_scope>
+        <sys_update_name>sys_script_include_1c4db8c8376033005deedcc773990ef2</sys_update_name>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2019-03-28 02:42:09</sys_updated_on>
+    </sys_script_include>
+</record_update>

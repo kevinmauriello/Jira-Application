@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sys_user_role">
+    <sys_user_role action="INSERT_OR_UPDATE">
+        <assignable_by/>
+        <can_delegate>true</can_delegate>
+        <description/>
+        <elevated_privilege>false</elevated_privilege>
+        <grantable>true</grantable>
+        <includes_roles/>
+        <name>x_303301_jira_inte.exception_user</name>
+        <requires_subscription>-1</requires_subscription>
+        <scoped_admin>false</scoped_admin>
+        <suffix>exception_user</suffix>
+        <sys_class_name>sys_user_role</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2019-02-23 07:18:25</sys_created_on>
+        <sys_id>d026922137ff23005deedcc773990e7d</sys_id>
+        <sys_mod_count>0</sys_mod_count>
+        <sys_name>x_303301_jira_inte.exception_user</sys_name>
+        <sys_package display_value="Jira Integration" source="x_303301_jira_inte">2473559d377323005deedcc773990ed8</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="Jira Integration">2473559d377323005deedcc773990ed8</sys_scope>
+        <sys_update_name>sys_user_role_d026922137ff23005deedcc773990e7d</sys_update_name>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2019-02-23 07:18:25</sys_updated_on>
+    </sys_user_role>
+</record_update>

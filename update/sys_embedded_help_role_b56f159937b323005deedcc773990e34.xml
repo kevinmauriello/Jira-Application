@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sys_embedded_help_role">
+    <sys_embedded_help_role action="INSERT_OR_UPDATE">
+        <order>1000</order>
+        <role display_value="x_303301_jira_inte.project_user" name="x_303301_jira_inte.project_user">356f159937b323005deedcc773990e32</role>
+        <sys_class_name>sys_embedded_help_role</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2019-02-22 08:40:50</sys_created_on>
+        <sys_id>b56f159937b323005deedcc773990e34</sys_id>
+        <sys_mod_count>0</sys_mod_count>
+        <sys_name>356f159937b323005deedcc773990e32</sys_name>
+        <sys_package display_value="Jira Integration" source="x_303301_jira_inte">2473559d377323005deedcc773990ed8</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="Jira Integration">2473559d377323005deedcc773990ed8</sys_scope>
+        <sys_update_name>sys_embedded_help_role_b56f159937b323005deedcc773990e34</sys_update_name>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2019-02-22 08:40:50</sys_updated_on>
+    </sys_embedded_help_role>
+</record_update>

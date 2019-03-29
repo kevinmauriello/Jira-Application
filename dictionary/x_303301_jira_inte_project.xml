@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?><database>
+    <element label="Project" max_length="40" name="x_303301_jira_inte_project" type="collection">
+        <element label="Project ID" max_length="40" name="project_id" type="string"/>
+        <element label="Project Key" max_length="40" name="project_key" type="string"/>
+        <element label="Project Name" max_length="255" name="project_name" type="string"/>
+        <index name="index">
+            <element name="project_id"/>
+        </index>
+    </element>
+</database>

@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?><database>
+    <element label="Choice Mapping" max_length="40" name="x_303301_jira_inte_choice_mapping" type="collection">
+        <element default="true" label="Active" max_length="40" name="active" type="boolean"/>
+        <element choice="1" label="Choice Type" mandatory="true" max_length="40" name="choice_type" type="string">
+            <choice>
+                <element inactive_on_update="false" label="State" sequence="100" value="State"/>
+                <element inactive_on_update="false" label="Priority" sequence="200" value="Priority"/>
+            </choice>
+        </element>
+        <element label="Jira Choice ID" mandatory="true" max_length="40" name="jira_choice_id" type="string"/>
+        <element label="Jira Choice Name" mandatory="true" max_length="40" name="jira_choice_name" type="string"/>
+        <element label="ServiceNow Choice Label" mandatory="true" max_length="40" name="servicenow_choice_label" type="string"/>
+        <element label="ServiceNow Choice Value" mandatory="true" max_length="40" name="servicenow_choice_value" type="string"/>
+        <element display="true" label="ServiceNow Table" mandatory="true" max_length="32" name="servicenow_table" reference="sys_db_object" type="reference"/>
+        <index name="index">
+            <element name="servicenow_table"/>
+        </index>
+    </element>
+</database>

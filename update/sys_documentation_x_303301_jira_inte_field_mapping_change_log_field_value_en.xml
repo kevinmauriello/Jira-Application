@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update>
+    <sys_documentation element="change_log_field_value" label="Change Log Field Value" language="en" table="x_303301_jira_inte_field_mapping">
+        <sys_documentation action="INSERT_OR_UPDATE">
+            <element>change_log_field_value</element>
+            <help/>
+            <hint/>
+            <label>Change Log Field Value</label>
+            <language>en</language>
+            <name>x_303301_jira_inte_field_mapping</name>
+            <plural>Change Log Field Values</plural>
+            <sys_class_name>sys_documentation</sys_class_name>
+            <sys_created_by>admin</sys_created_by>
+            <sys_created_on>2019-03-28 14:58:20</sys_created_on>
+            <sys_id>c3dbbdd4372033005deedcc773990e78</sys_id>
+            <sys_mod_count>0</sys_mod_count>
+            <sys_name>Change Log Field Value</sys_name>
+            <sys_package display_value="Jira Integration" source="x_303301_jira_inte">2473559d377323005deedcc773990ed8</sys_package>
+            <sys_policy/>
+            <sys_scope display_value="Jira Integration">2473559d377323005deedcc773990ed8</sys_scope>
+            <sys_update_name>sys_documentation_x_303301_jira_inte_field_mapping_change_log_field_value_en</sys_update_name>
+            <sys_updated_by>admin</sys_updated_by>
+            <sys_updated_on>2019-03-28 14:58:20</sys_updated_on>
+            <url/>
+            <url_target/>
+        </sys_documentation>
+    </sys_documentation>
+</record_update>

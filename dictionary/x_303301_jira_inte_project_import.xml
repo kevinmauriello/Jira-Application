@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?><database>
+    <element extends="sys_import_set_row" label="Project Import" max_length="40" name="x_303301_jira_inte_project_import" type="collection">
+        <element attributes="edge_encryption_enabled=true,import_attribute_name=u_project_id" label="Project ID" max_length="40" name="u_project_id" type="string"/>
+        <element attributes="edge_encryption_enabled=true,import_attribute_name=u_project_key" label="Project Key" max_length="40" name="u_project_key" type="string"/>
+        <element attributes="edge_encryption_enabled=true,import_attribute_name=u_project_name" label="Project Name" max_length="1000" name="u_project_name" type="string"/>
+    </element>
+</database>

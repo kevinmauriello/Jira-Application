@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sys_index">
+    <sys_index action="INSERT_OR_UPDATE">
+        <col_name_string>account_id</col_name_string>
+        <index_col_name element="account_id" name="x_303301_jira_inte_user">3faed55937b323005deedcc773990e2b</index_col_name>
+        <logical_table_name>x_303301_jira_inte_user</logical_table_name>
+        <sys_class_name>sys_index</sys_class_name>
+        <sys_created_by>system</sys_created_by>
+        <sys_created_on>2019-02-22 08:47:35</sys_created_on>
+        <sys_id>e8f02dd937b323005deedcc773990e32</sys_id>
+        <sys_mod_count>0</sys_mod_count>
+        <sys_name>x_303301_jira_inte_user</sys_name>
+        <sys_package display_value="Jira Integration" source="x_303301_jira_inte">2473559d377323005deedcc773990ed8</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="Jira Integration">2473559d377323005deedcc773990ed8</sys_scope>
+        <sys_update_name>sys_index_x_303301_jira_inte_user_account_id</sys_update_name>
+        <sys_updated_by>system</sys_updated_by>
+        <sys_updated_on>2019-02-22 08:47:35</sys_updated_on>
+        <table display_value="User" name="x_303301_jira_inte_user">2fae5d5937b323005deedcc773990e06</table>
+        <unique_index>false</unique_index>
+    </sys_index>
+</record_update>

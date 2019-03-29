@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?><database>
+    <element label="Issue Type" max_length="40" name="x_303301_jira_inte_issue_type" type="collection">
+        <element label="Issue Type ID" max_length="40" name="issue_type_id" type="integer"/>
+        <element display="true" label="Issue Type Name" max_length="40" name="issue_type_name" type="string"/>
+        <index name="index">
+            <element name="issue_type_id"/>
+        </index>
+    </element>
+</database>

@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sys_script_fix">
+    <sys_script_fix action="INSERT_OR_UPDATE">
+        <active>true</active>
+        <before>false</before>
+        <description/>
+        <flush_cache>false</flush_cache>
+        <name>Jira - Transitions</name>
+        <record_for_rollback>false</record_for_rollback>
+        <run_once>true</run_once>
+        <script><![CDATA[var ji = new x_303301_jira_inte.JiraIntegration();
+var oData = ji._callREST('rest/api/2/issue/IT-33/transitions', 'get', '','');
+//var oData = ji._callREST('rest/api/2/issue/IT-33/transitions?expand=transitions.fields', 'get', '','');
+//var oData = ji._callREST('rest/api/2/issue/IT-33/transitions', 'post', '{"transition" : {"id":"31"}}','');
+ji.debug(JSON.stringify(oData));
+ji.sendToLog();
+]]></script>
+        <sys_class_name>sys_script_fix</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2019-02-24 18:25:30</sys_created_on>
+        <sys_id>3d68f5c63773a3005deedcc773990e69</sys_id>
+        <sys_mod_count>6</sys_mod_count>
+        <sys_name>Jira - Transitions</sys_name>
+        <sys_package display_value="Jira Integration" source="x_303301_jira_inte">2473559d377323005deedcc773990ed8</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="Jira Integration">2473559d377323005deedcc773990ed8</sys_scope>
+        <sys_update_name>sys_script_fix_3d68f5c63773a3005deedcc773990e69</sys_update_name>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2019-03-28 23:42:14</sys_updated_on>
+        <unloadable>false</unloadable>
+    </sys_script_fix>
+</record_update>

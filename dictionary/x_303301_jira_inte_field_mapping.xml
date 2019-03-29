@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?><database>
+    <element label="Field Mapping" max_length="40" name="x_303301_jira_inte_field_mapping" type="collection">
+        <element default="true" label="Active" max_length="40" name="active" type="boolean"/>
+        <element label="Change Log Field Name" max_length="40" name="change_log_field_name" type="string"/>
+        <element label="Change Log Field Value" max_length="40" name="change_log_field_value" type="string"/>
+        <element label="Description" max_length="1000" name="description" type="string"/>
+        <element label="Dot Walk Field" max_length="40" name="dot_walk_field" type="string"/>
+        <element label="Jira Field" mandatory="true" max_length="40" name="jira_field" type="string"/>
+        <element label="Jira Field Key" max_length="40" name="jira_field_key" type="string"/>
+        <element label="Jira Issue Type" mandatory="true" max_length="40" name="jira_issue_type" reference="x_303301_jira_inte_issue_type" type="reference"/>
+        <element label="On Insert" max_length="40" name="on_insert" type="boolean"/>
+        <element label="On Update" max_length="40" name="on_update" type="boolean"/>
+        <element label="Process Order" max_length="40" name="process_order" type="integer"/>
+        <element label="ServiceNow Field" mandatory="true" max_length="40" name="servicenow_field" type="string"/>
+        <element choice="1" label="ServiceNow Lookup Type" max_length="40" name="servicenow_lookup_type" type="string">
+            <choice>
+                <element inactive_on_update="false" label="Assignment Group" sequence="100" value="Assignment Group"/>
+                <element inactive_on_update="false" label="User" sequence="200" value="User"/>
+                <element inactive="true" inactive_on_update="true" label="Choice" sequence="300" value="Choice"/>
+            </choice>
+        </element>
+        <element label="ServiceNow Table" mandatory="true" max_length="32" name="servicenow_table" reference="sys_db_object" type="reference"/>
+        <index name="index">
+            <element name="servicenow_table"/>
+        </index>
+    </element>
+</database>

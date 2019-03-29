@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update>
+    <sys_documentation element="servicenow_choice_label" label="ServiceNow Choice Label" language="en" table="x_303301_jira_inte_choice_mapping">
+        <sys_documentation action="INSERT_OR_UPDATE">
+            <element>servicenow_choice_label</element>
+            <help/>
+            <hint/>
+            <label>ServiceNow Choice Label</label>
+            <language>en</language>
+            <name>x_303301_jira_inte_choice_mapping</name>
+            <plural>ServiceNow Choice Labels</plural>
+            <sys_class_name>sys_documentation</sys_class_name>
+            <sys_created_by>admin</sys_created_by>
+            <sys_created_on>2019-02-24 04:42:46</sys_created_on>
+            <sys_id>821cbe3937bb63005deedcc773990e3d</sys_id>
+            <sys_mod_count>0</sys_mod_count>
+            <sys_name>ServiceNow Choice Label</sys_name>
+            <sys_package display_value="Jira Integration" source="x_303301_jira_inte">2473559d377323005deedcc773990ed8</sys_package>
+            <sys_policy/>
+            <sys_scope display_value="Jira Integration">2473559d377323005deedcc773990ed8</sys_scope>
+            <sys_update_name>sys_documentation_x_303301_jira_inte_choice_mapping_servicenow_choice_label_en</sys_update_name>
+            <sys_updated_by>admin</sys_updated_by>
+            <sys_updated_on>2019-02-24 04:42:46</sys_updated_on>
+            <url/>
+            <url_target/>
+        </sys_documentation>
+    </sys_documentation>
+</record_update>

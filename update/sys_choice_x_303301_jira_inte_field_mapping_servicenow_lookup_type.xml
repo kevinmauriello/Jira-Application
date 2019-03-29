@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update>
+    <sys_choice action="INSERT_OR_UPDATE" field="servicenow_lookup_type" table="x_303301_jira_inte_field_mapping" version="3">
+        <sys_choice action="INSERT_OR_UPDATE">
+            <dependent_value/>
+            <element>servicenow_lookup_type</element>
+            <hint/>
+            <inactive>false</inactive>
+            <label>Assignment Group</label>
+            <language>en</language>
+            <name>x_303301_jira_inte_field_mapping</name>
+            <sequence>100</sequence>
+            <sys_created_by>admin</sys_created_by>
+            <sys_created_on>2019-02-23 07:01:49</sys_created_on>
+            <sys_domain>global</sys_domain>
+            <sys_domain_path>/</sys_domain_path>
+            <sys_id>8b429a6d37bf23005deedcc773990e79</sys_id>
+            <sys_mod_count>2</sys_mod_count>
+            <sys_updated_by>admin</sys_updated_by>
+            <sys_updated_on>2019-02-23 07:02:01</sys_updated_on>
+            <value>Assignment Group</value>
+        </sys_choice>
+        <sys_choice action="INSERT_OR_UPDATE">
+            <dependent_value/>
+            <element>servicenow_lookup_type</element>
+            <hint/>
+            <inactive>false</inactive>
+            <label>User</label>
+            <language>en</language>
+            <name>x_303301_jira_inte_field_mapping</name>
+            <sequence>200</sequence>
+            <sys_created_by>admin</sys_created_by>
+            <sys_created_on>2019-02-23 07:02:05</sys_created_on>
+            <sys_domain>global</sys_domain>
+            <sys_domain_path>/</sys_domain_path>
+            <sys_id>1552126d37bf23005deedcc773990ec7</sys_id>
+            <sys_mod_count>2</sys_mod_count>
+            <sys_updated_by>admin</sys_updated_by>
+            <sys_updated_on>2019-02-23 07:02:11</sys_updated_on>
+            <value>User</value>
+        </sys_choice>
+        <sys_choice action="INSERT_OR_UPDATE">
+            <dependent_value/>
+            <element>servicenow_lookup_type</element>
+            <hint/>
+            <inactive>true</inactive>
+            <label>Choice</label>
+            <language>en</language>
+            <name>x_303301_jira_inte_field_mapping</name>
+            <sequence>300</sequence>
+            <sys_created_by>admin</sys_created_by>
+            <sys_created_on>2019-02-24 04:36:49</sys_created_on>
+            <sys_domain>global</sys_domain>
+            <sys_domain_path>/</sys_domain_path>
+            <sys_id>64ba3ef537bb63005deedcc773990e02</sys_id>
+            <sys_mod_count>3</sys_mod_count>
+            <sys_updated_by>admin</sys_updated_by>
+            <sys_updated_on>2019-02-24 04:37:49</sys_updated_on>
+            <value>Choice</value>
+        </sys_choice>
+        <sys_choice_set action="INSERT_OR_UPDATE">
+            <element>servicenow_lookup_type</element>
+            <name>x_303301_jira_inte_field_mapping</name>
+            <sys_class_name>sys_choice_set</sys_class_name>
+            <sys_created_by>admin</sys_created_by>
+            <sys_created_on>2019-02-23 07:01:49</sys_created_on>
+            <sys_id>99529a6d37bf23005deedcc773990e53</sys_id>
+            <sys_mod_count>0</sys_mod_count>
+            <sys_name>servicenow_lookup_type</sys_name>
+            <sys_package display_value="Jira Integration" source="x_303301_jira_inte">2473559d377323005deedcc773990ed8</sys_package>
+            <sys_policy/>
+            <sys_scope display_value="Jira Integration">2473559d377323005deedcc773990ed8</sys_scope>
+            <sys_update_name>sys_choice_x_303301_jira_inte_field_mapping_servicenow_lookup_type</sys_update_name>
+            <sys_updated_by>admin</sys_updated_by>
+            <sys_updated_on>2019-02-23 07:01:49</sys_updated_on>
+        </sys_choice_set>
+    </sys_choice>
+</record_update>

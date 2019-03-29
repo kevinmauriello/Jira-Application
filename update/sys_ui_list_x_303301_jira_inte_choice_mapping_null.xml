@@ -1,0 +1,137 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update>
+    <sys_ui_list parent="" relationship="" sys_domain="global" table="x_303301_jira_inte_choice_mapping" version="2" view="">
+        <sys_ui_list_element action="INSERT_OR_UPDATE">
+            <average_value>false</average_value>
+            <element>active</element>
+            <list_id display_value="x_303301_jira_inte_choice_mapping" element="NULL" name="x_303301_jira_inte_choice_mapping" parent="NULL" relationship="NULL" sys_domain="global" view="Default view">a2760c5e37b7a3005deedcc773990e31</list_id>
+            <max_value>false</max_value>
+            <min_value>false</min_value>
+            <position>0</position>
+            <sum>false</sum>
+            <sys_created_by>admin</sys_created_by>
+            <sys_created_on>2019-02-25 04:46:14</sys_created_on>
+            <sys_id>6e760c5e37b7a3005deedcc773990e31</sys_id>
+            <sys_mod_count>0</sys_mod_count>
+            <sys_updated_by>admin</sys_updated_by>
+            <sys_updated_on>2019-02-25 04:46:14</sys_updated_on>
+        </sys_ui_list_element>
+        <sys_ui_list_element action="INSERT_OR_UPDATE">
+            <average_value>false</average_value>
+            <element>servicenow_table</element>
+            <list_id display_value="x_303301_jira_inte_choice_mapping" element="NULL" name="x_303301_jira_inte_choice_mapping" parent="NULL" relationship="NULL" sys_domain="global" view="Default view">a2760c5e37b7a3005deedcc773990e31</list_id>
+            <max_value>false</max_value>
+            <min_value>false</min_value>
+            <position>1</position>
+            <sum>false</sum>
+            <sys_created_by>admin</sys_created_by>
+            <sys_created_on>2019-02-25 04:46:14</sys_created_on>
+            <sys_id>e2760c5e37b7a3005deedcc773990e32</sys_id>
+            <sys_mod_count>0</sys_mod_count>
+            <sys_updated_by>admin</sys_updated_by>
+            <sys_updated_on>2019-02-25 04:46:14</sys_updated_on>
+        </sys_ui_list_element>
+        <sys_ui_list_element action="INSERT_OR_UPDATE">
+            <average_value>false</average_value>
+            <element>choice_type</element>
+            <list_id display_value="x_303301_jira_inte_choice_mapping" element="NULL" name="x_303301_jira_inte_choice_mapping" parent="NULL" relationship="NULL" sys_domain="global" view="Default view">a2760c5e37b7a3005deedcc773990e31</list_id>
+            <max_value>false</max_value>
+            <min_value>false</min_value>
+            <position>2</position>
+            <sum>false</sum>
+            <sys_created_by>admin</sys_created_by>
+            <sys_created_on>2019-02-25 04:46:14</sys_created_on>
+            <sys_id>66760c5e37b7a3005deedcc773990e32</sys_id>
+            <sys_mod_count>0</sys_mod_count>
+            <sys_updated_by>admin</sys_updated_by>
+            <sys_updated_on>2019-02-25 04:46:14</sys_updated_on>
+        </sys_ui_list_element>
+        <sys_ui_list_element action="INSERT_OR_UPDATE">
+            <average_value>false</average_value>
+            <element>servicenow_choice_label</element>
+            <list_id display_value="x_303301_jira_inte_choice_mapping" element="NULL" name="x_303301_jira_inte_choice_mapping" parent="NULL" relationship="NULL" sys_domain="global" view="Default view">a2760c5e37b7a3005deedcc773990e31</list_id>
+            <max_value>false</max_value>
+            <min_value>false</min_value>
+            <position>3</position>
+            <sum>false</sum>
+            <sys_created_by>admin</sys_created_by>
+            <sys_created_on>2019-02-25 04:46:14</sys_created_on>
+            <sys_id>e6760c5e37b7a3005deedcc773990e32</sys_id>
+            <sys_mod_count>0</sys_mod_count>
+            <sys_updated_by>admin</sys_updated_by>
+            <sys_updated_on>2019-02-25 04:46:14</sys_updated_on>
+        </sys_ui_list_element>
+        <sys_ui_list_element action="INSERT_OR_UPDATE">
+            <average_value>false</average_value>
+            <element>servicenow_choice_value</element>
+            <list_id display_value="x_303301_jira_inte_choice_mapping" element="NULL" name="x_303301_jira_inte_choice_mapping" parent="NULL" relationship="NULL" sys_domain="global" view="Default view">a2760c5e37b7a3005deedcc773990e31</list_id>
+            <max_value>false</max_value>
+            <min_value>false</min_value>
+            <position>4</position>
+            <sum>false</sum>
+            <sys_created_by>admin</sys_created_by>
+            <sys_created_on>2019-02-25 04:46:14</sys_created_on>
+            <sys_id>6a760c5e37b7a3005deedcc773990e32</sys_id>
+            <sys_mod_count>0</sys_mod_count>
+            <sys_updated_by>admin</sys_updated_by>
+            <sys_updated_on>2019-02-25 04:46:14</sys_updated_on>
+        </sys_ui_list_element>
+        <sys_ui_list_element action="INSERT_OR_UPDATE">
+            <average_value>false</average_value>
+            <element>jira_choice_name</element>
+            <list_id display_value="x_303301_jira_inte_choice_mapping" element="NULL" name="x_303301_jira_inte_choice_mapping" parent="NULL" relationship="NULL" sys_domain="global" view="Default view">a2760c5e37b7a3005deedcc773990e31</list_id>
+            <max_value>false</max_value>
+            <min_value>false</min_value>
+            <position>5</position>
+            <sum>false</sum>
+            <sys_created_by>admin</sys_created_by>
+            <sys_created_on>2019-02-25 04:46:14</sys_created_on>
+            <sys_id>ea760c5e37b7a3005deedcc773990e32</sys_id>
+            <sys_mod_count>0</sys_mod_count>
+            <sys_updated_by>admin</sys_updated_by>
+            <sys_updated_on>2019-02-25 04:46:14</sys_updated_on>
+        </sys_ui_list_element>
+        <sys_ui_list_element action="INSERT_OR_UPDATE">
+            <average_value>false</average_value>
+            <element>jira_choice_id</element>
+            <list_id display_value="x_303301_jira_inte_choice_mapping" element="NULL" name="x_303301_jira_inte_choice_mapping" parent="NULL" relationship="NULL" sys_domain="global" view="Default view">a2760c5e37b7a3005deedcc773990e31</list_id>
+            <max_value>false</max_value>
+            <min_value>false</min_value>
+            <position>6</position>
+            <sum>false</sum>
+            <sys_created_by>admin</sys_created_by>
+            <sys_created_on>2019-02-25 04:46:14</sys_created_on>
+            <sys_id>6e760c5e37b7a3005deedcc773990e32</sys_id>
+            <sys_mod_count>0</sys_mod_count>
+            <sys_updated_by>admin</sys_updated_by>
+            <sys_updated_on>2019-02-25 04:46:14</sys_updated_on>
+        </sys_ui_list_element>
+        <sys_ui_list action="INSERT_OR_UPDATE">
+            <average_value>false</average_value>
+            <element/>
+            <max_value>false</max_value>
+            <min_value>false</min_value>
+            <name>x_303301_jira_inte_choice_mapping</name>
+            <parent/>
+            <position/>
+            <relationship/>
+            <sum>false</sum>
+            <sys_class_name>sys_ui_list</sys_class_name>
+            <sys_created_by>admin</sys_created_by>
+            <sys_created_on>2019-02-25 04:46:14</sys_created_on>
+            <sys_domain>global</sys_domain>
+            <sys_domain_path>/</sys_domain_path>
+            <sys_id>a2760c5e37b7a3005deedcc773990e31</sys_id>
+            <sys_mod_count>0</sys_mod_count>
+            <sys_name>x_303301_jira_inte_choice_mapping</sys_name>
+            <sys_package display_value="Jira Integration" source="x_303301_jira_inte">2473559d377323005deedcc773990ed8</sys_package>
+            <sys_policy/>
+            <sys_scope display_value="Jira Integration">2473559d377323005deedcc773990ed8</sys_scope>
+            <sys_update_name>sys_ui_list_x_303301_jira_inte_choice_mapping_null</sys_update_name>
+            <sys_updated_by>admin</sys_updated_by>
+            <sys_updated_on>2019-02-25 04:46:14</sys_updated_on>
+            <sys_user/>
+            <view display_value="Default view" name="NULL">Default view</view>
+            <view_name/>
+        </sys_ui_list>
+    </sys_ui_list>
+</record_update>

@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?><database>
+    <element extends="sys_import_set_row" label="User Import" max_length="40" name="x_303301_jira_inte_user_import" type="collection">
+        <element attributes="edge_encryption_enabled=true,import_attribute_name=u_account_id" label="Account ID" max_length="40" name="u_account_id" type="string"/>
+        <element attributes="edge_encryption_enabled=true,import_attribute_name=u_active" label="Active" max_length="40" name="u_active" type="string"/>
+        <element attributes="edge_encryption_enabled=true,import_attribute_name=u_display_name" label="Display Name" max_length="40" name="u_display_name" type="string"/>
+        <element attributes="edge_encryption_enabled=true,import_attribute_name=u_email_address" label="Email Address" max_length="40" name="u_email_address" type="string"/>
+        <element attributes="edge_encryption_enabled=true,import_attribute_name=u_key" label="Key" max_length="40" name="u_key" type="string"/>
+        <element attributes="edge_encryption_enabled=true,import_attribute_name=u_name" label="Name" max_length="40" name="u_name" type="string"/>
+    </element>
+</database>

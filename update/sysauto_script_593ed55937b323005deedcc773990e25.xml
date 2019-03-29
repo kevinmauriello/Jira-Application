@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sysauto_script">
+    <sysauto_script action="INSERT_OR_UPDATE">
+        <active>true</active>
+        <condition/>
+        <conditional>false</conditional>
+        <name>Jira - Projects - Users - Issue Types</name>
+        <run_as display_value="System Administrator">6816f79cc0a8016401c5a33be04be441</run_as>
+        <run_as_tz/>
+        <run_dayofmonth>1</run_dayofmonth>
+        <run_dayofweek>1</run_dayofweek>
+        <run_period/>
+        <run_start>2019-02-22 08:35:37</run_start>
+        <run_time>1970-01-01 08:01:00</run_time>
+        <run_type>daily</run_type>
+        <script><![CDATA[var ji = new x_303301_jira_inte.JiraIntegration();
+
+try {
+	// load jira projects into servicenow
+	var oData = ji._callREST("rest/api/latest/project", "get", "","");
+	var grPRJ = null;
+	ji.debug(oData.body.length + " Projects found");
+	for (var i=0; i<oData.body.length; i++) {
+		grPRJ = new GlideRecord('x_303301_jira_inte_project_import');
+		grPRJ.initialize();
+		grPRJ.u_project_id = oData.body[i].id.toString();
+		grPRJ.u_project_key = oData.body[i].key.toString();
+		grPRJ.u_project_name = oData.body[i].name.toString();
+		grPRJ.insert();
+	}
+
+	// load jira users into servicenow
+	oData = ji._callREST('rest/api/2/user/search?includeInactive&username=%', 'get', '','');
+	var grUSR = null;
+	ji.debug(oData.body.length + " Users found");
+	for (var i=0; i<oData.body.length; i++) {
+		grUSR = new GlideRecord('x_303301_jira_inte_user_import');
+		grUSR.initialize();
+		grUSR.u_account_id = oData.body[i].accountId.toString();
+		grUSR.u_key = oData.body[i].key.toString();
+		grUSR.u_name = oData.body[i].name.toString();
+		grUSR.u_display_name = oData.body[i].displayName.toString();
+		grUSR.u_email_address = oData.body[i].emailAddress.toString();
+		grUSR.u_active = oData.body[i].active;
+		grUSR.insert();
+	}
+
+	// load jira issue types into servicenow
+	oData = ji._callREST('rest/api/2/issuetype', 'get', '','');
+	var grISSUE = null;
+	ji.debug(oData.body.length + " Issue Types found");
+	for (var i=0; i<oData.body.length; i++) {
+		grISSUE = new GlideRecord('x_303301_jira_inte_issue_type_import');
+		grISSUE.initialize();
+		grISSUE.u_id = oData.body[i].id.toString();
+		grISSUE.u_name = oData.body[i].name.toString();
+		grISSUE.insert();
+	}
+} catch(ex) {
+	ji.debug('ERROR in scheduled job ' + ex);
+} finally {
+	ji.sendToLog();
+}]]></script>
+        <sys_class_name>sysauto_script</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2019-02-22 08:36:34</sys_created_on>
+        <sys_id>593ed55937b323005deedcc773990e25</sys_id>
+        <sys_mod_count>9</sys_mod_count>
+        <sys_name>Jira - Projects - Users - Issue Types</sys_name>
+        <sys_package display_value="Jira Integration" source="x_303301_jira_inte">2473559d377323005deedcc773990ed8</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="Jira Integration">2473559d377323005deedcc773990ed8</sys_scope>
+        <sys_update_name>sysauto_script_593ed55937b323005deedcc773990e25</sys_update_name>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2019-02-24 19:02:14</sys_updated_on>
+        <upgrade_safe>false</upgrade_safe>
+    </sysauto_script>
+</record_update>

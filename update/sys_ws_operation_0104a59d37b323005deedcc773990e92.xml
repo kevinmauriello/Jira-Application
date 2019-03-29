@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sys_ws_operation">
+    <sys_ws_operation action="INSERT_OR_UPDATE">
+        <active>true</active>
+        <consumes>application/json,application/xml,text/xml</consumes>
+        <consumes_customized>false</consumes_customized>
+        <default_operation_uri/>
+        <enforce_acl>cf9d01d3e73003009d6247e603f6a990</enforce_acl>
+        <http_method>GET</http_method>
+        <name>attachment</name>
+        <operation_script><![CDATA[(function process(/*RESTAPIRequest*/ request, /*RESTAPIResponse*/ response) {
+
+	var attachment_sys_id = request.pathParams.sys_id;
+
+	var gr = new GlideRecord("sys_attachment");
+	if (gr.get(attachment_sys_id)) {
+		var content_type = gr.content_type;
+		var file_name = gr.file_name;
+
+		var hdrs = {};
+
+		var writer = response.getStreamWriter();
+		var ga = new GlideSysAttachment();
+		var attachmentStream = ga.getContentStream(attachment_sys_id);
+		var digest = new GlideDigest();
+		boundary = digest.getMD5HexFromInputStream(attachmentStream);
+		attachmentStream = ga.getContentStream(attachment_sys_id);
+
+		hdrs['Content-Type'] = 'multipart/form-data; boundary=' + boundary;
+		response.setStatus(200);
+		response.setHeaders(hdrs);
+
+		var bodyHeader = "--" + boundary + "\r\n" +
+			'Content-Disposition: form-data; name=\"file\"; filename=\"'+file_name+'\"' + "\r\n" +
+			"Content-Type: " + content_type + "\r\n" + "\r\n";
+		var bodyFooter = "\r\n--" + boundary + "--"+"\r\n";
+
+		writer.writeString(bodyHeader);
+		writer.writeStream(attachmentStream);
+		writer.writeString(bodyFooter);
+	} else {
+		response.setStatus(400);
+	}
+
+})(request, response);]]></operation_script>
+        <operation_uri>/api/x_303301_jira_inte/multipartattachment/{sys_id}</operation_uri>
+        <produces>application/json,application/xml,text/xml</produces>
+        <produces_customized>false</produces_customized>
+        <relative_path>/{sys_id}</relative_path>
+        <request_example/>
+        <requires_acl_authorization>true</requires_acl_authorization>
+        <requires_authentication>false</requires_authentication>
+        <requires_snc_internal_role>true</requires_snc_internal_role>
+        <short_description/>
+        <sys_class_name>sys_ws_operation</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2019-02-22 09:02:06</sys_created_on>
+        <sys_id>0104a59d37b323005deedcc773990e92</sys_id>
+        <sys_mod_count>0</sys_mod_count>
+        <sys_name>attachment</sys_name>
+        <sys_package display_value="Jira Integration" source="x_303301_jira_inte">2473559d377323005deedcc773990ed8</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="Jira Integration">2473559d377323005deedcc773990ed8</sys_scope>
+        <sys_update_name>sys_ws_operation_0104a59d37b323005deedcc773990e92</sys_update_name>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2019-02-22 09:02:06</sys_updated_on>
+        <web_service_definition display_value="multipartAttachment">15f3659d37b323005deedcc773990e6c</web_service_definition>
+        <web_service_version/>
+    </sys_ws_operation>
+</record_update>

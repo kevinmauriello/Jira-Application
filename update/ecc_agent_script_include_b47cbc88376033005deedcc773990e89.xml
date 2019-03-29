@@ -1,0 +1,433 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update sys_domain="global" table="ecc_agent_script_include">
+    <ecc_agent_script_include action="INSERT_OR_UPDATE">
+        <active>true</active>
+        <description/>
+        <name>JiraAttachments</name>
+        <script><![CDATA[var JiraAttachments = Class.create();
+JiraAttachments.prototype = {
+    initialize: function() {
+    	this.debug("Starting MID Server File Transfer...", 'debug');
+    	try {
+    		// * Set up the Packages references
+			this.File = Packages.java.io.File;
+	        this.FileOutputStream = Packages.java.io.FileOutputStream;
+			this.Base64 = Packages.org.apache.commons.codec.binary.Base64;
+			this.FileUtils = Packages.org.apache.commons.io.FileUtils;
+			this.httpclient = Packages.org.apache.commons.httpclient;
+			this.HttpClient = this.httpclient.HttpClient;
+			this.UsernamePasswordCredentials = this.httpclient.UsernamePasswordCredentials;
+			this.AuthScope = this.httpclient.auth.AuthScope;
+			this.GetMethod = this.httpclient.methods.GetMethod;
+			this.PostMethod = this.httpclient.methods.PostMethod;
+			this.StringRequestEntity = this.httpclient.methods.StringRequestEntity;
+			
+			// * Set up the parameters
+			this.verbose = probe.getParameter("verbose");
+			this.snBaseURL = probe.getParameter("sn_base_url");
+			this.hostSN = '';
+			if (this.snBaseURL) {
+				var matchHost = this.snBaseURL.match(/^https?\:\/\/([^\/?#]+)(?:[\/?#]|$)/i);
+				this.hostSN = matchHost && matchHost[1];
+			}
+			this.portSN = probe.getParameter("port_sn");
+			this.table = probe.getParameter("table");
+			this.sysid = probe.getParameter("sysid");
+			this.useInstanceProxy = probe.getParameter("useinstanceproxy");
+			this.proxyHost = probe.getParameter("proxyhost");
+			this.proxyPort = probe.getParameter("proxyport");
+			this.encpayload = probe.getParameter("file_payload");
+			this.fileName = probe.getParameter("fileName");
+			this.attachmentID = probe.getParameter('attachment_id');
+			this.usernameJira = probe.getParameter("username_jira");
+			this.passwordJira = probe.getParameter("password_jira");
+			this.usernameSN = probe.getParameter("username_sn");
+			this.passwordSN = probe.getParameter("password_sn");
+			this.contentType = probe.getParameter("contentType");
+			this.jiraBaseURL = probe.getParameter("jira_base_url");
+			this.jiraIssueNumber = probe.getParameter("jira_issue_number");
+
+			// * Set up other variables
+			this.debugFlag = probe.getParameter("debug");
+			this.charset = "UTF-8";
+			this.LINE_FEED = "\r\n";
+			this.boundary = "-----------------------------" + new Date().getTime();
+
+			// * Make sure ServiceNow base url has trailing slash
+	 		var lastChar = String(this.snBaseURL).substr(String(this.snBaseURL).length - 1);
+	 		if (lastChar != "/") {
+	 			this.snBaseURL = String(this.snBaseURL) + "/";
+	 		}
+    	} catch (e) {
+    		this.debug(e.message, 'error');
+    	}
+	},
+
+	/**
+	 * Mail function to send attachments to Jira
+	 */
+	sendAttachments: function() {
+		this.debug('Start sending file to Jira...', 'debug');
+		var url = this._getInstanceConnectionURL();
+		var conn = this._getURLConnection(url);
+		var file = this._getFile();
+		this.debug(file, 'debug');
+		var response = this._writeFile(conn, file);
+		this.debug("HTTP response " + response, "debug");
+		if (response != 200) {
+			throw "HTTP response " + response;
+		}
+		this.debug("HTTP response " + response, "debug");
+		this.debug("Completed MID Server File Transfer", 'info');
+		return response;
+	},
+
+	/** 
+	 * Main function to retrieve attachments from Jira
+	 * @ filePath https://<jira_instance_domain>:<port>/secure/attachment/<attachment_id>/<file_name>
+	 * @ user
+	 */
+	retrieveAttachments: function() {
+		this.debug('Start retrieving file from Jira...', 'debug');
+		this._downloadFile(this.fileName, this.usernameJira, this.passwordJira);
+		this._uploadAttachment(this.fileName, this.attachmentID, this.table, this.sysid);
+		this._removeLocalFile(this.fileName);
+	},
+
+	/** 
+	 * Download content from Jira to local file
+	 */
+	_downloadFile: function (filePath, user, pwd) {
+		this.debug('Start downloading file from Jira...', 'debug');
+		var httpclient = Packages.org.apache.commons.httpclient;
+		var HttpClient = httpclient.HttpClient;
+		var GetMethod = httpclient.methods.GetMethod;
+		var fileName = this.getFileNameFromUrl(filePath);
+
+		try {
+			var hc = new HttpClient();
+			var get = new GetMethod(filePath);
+
+			var userpass = new Packages.java.lang.String(user + ":" + pwd);
+			var basicAuth = "Basic " + 
+				(new Packages.javax.xml.bind.DatatypeConverter.printBase64Binary(userpass.getBytes()) + '');  
+			get.setRequestHeader("Authorization", basicAuth);
+
+			var code = hc.executeMethod(get);
+			this.debug("Get Status Code:" + code, 'debug');
+
+			var inputStream = get.getResponseBodyAsStream();
+			if (inputStream != null && code >= 200 && code <= 300) {
+				var fout = new Packages.java.io.FileOutputStream(new Packages.java.io.File(fileName));
+				var read = 0;
+				var bytes = new Packages.java.lang.reflect.Array.newInstance(Packages.java.lang.Byte.TYPE, 1024);
+                while ((read = inputStream.read(bytes)) != -1) {
+                	fout.write(bytes, 0, read);
+                }
+				fout.close();
+			} else {
+				this.debug("Download failed, Status: " + code, 'error');
+			}
+			get.releaseConnection();
+		} catch(ex) {
+			this.debug('ERROR in downloadFile: ' + ex, 'error');
+		}
+	},
+
+	/**
+	 * Upload content from local file to ServiceNow as attachment
+	 */
+	_uploadAttachment: function (filePath, attachmentID, table, recordID) {
+		this.debug('Start uploading file to SN...', 'debug');
+		try {
+			var fileName = this.getFileNameFromUrl(filePath);
+			var file = new this.File(fileName);
+
+			var encodedBase64 = "";
+			try {
+				var length = file.length();
+				this.debug("Opening File Input Stream", 'debug');
+				encodedBase64 = String(this.Base64.encodeBase64String(this.FileUtils.readFileToByteArray(new this.File(fileName))));
+			} catch (e) {
+				this.debug('ERROR encoding file: ' + fileName + ', ' + e, 'error');
+			}
+
+			var data = {};
+			data.agent = "AttachmentCreator";
+			data.topic = "AttachmentCreator";
+			data.name = String(file.getName()) + ":" + this._getFileMimeType(file);
+			data.source = table + ":" + recordID;
+			data.payload = encodedBase64;
+			this._makeJSONCall('ecc_queue', data);
+			this._flagAttachment(attachmentID, this.jiraIssueNumber);
+		} catch(postEr) {
+			this.debug('ERROR in _uploadAttachment:' + postEr, 'error');
+		}
+    },
+
+    /**
+     * Flag the attachment in the system so it won't be synced again next time
+     */
+    _flagAttachment: function(attachmentID, jiraIssueNumber) {
+    	this.debug('Flagging the attachment in ServiceNow...', 'debug');
+    	var data = {};
+		data.u_issue_id = jiraIssueNumber;
+		data.u_attachment_id = attachmentID;
+		this._makeJSONCall('u_jira_attachment', data);
+    	this.debug('Attachment flagged in ServiceNow...', 'debug');
+    },
+
+    /** 
+     * Delete local file from MID server
+     */
+	_removeLocalFile: function(filePath) {
+		this.debug('Start deleting local file from MID server...', 'debug');
+		var fileName = this.getFileNameFromUrl(filePath);
+
+		try {
+			var f = new Packages.java.io.File(fileName);
+			if (f.isFile()) {
+				this.debug("deleting file: " + fileName, 'debug');
+				f["delete"]();
+			}
+		} catch(ex) {
+			this.debug('ERROR in _removeLocalFile: ' + ex, 'error');
+		}
+	},
+
+	_makeJSONCall: function(table, data) {
+		try {
+			//this.debug("SN base URL: " + this.snBaseURL + ", SN host: " + this.hostSN, 'debug');
+			var client = new this.HttpClient();
+			var post = new this.PostMethod(this.snBaseURL + table + '.do?JSONv2&sysparm_action=insert');
+
+			if (this.useInstanceProxy == 'true') {
+				var config = client.getHostConfiguration();
+				config.setProxy(this.proxyHost, parseInt(this.proxyPort));
+			}
+
+			var authScope = new this.AuthScope(this.hostSN, this.portSN);
+			var credentials = new this.UsernamePasswordCredentials(this.usernameSN, this.passwordSN);
+            client.getState().setCredentials(authScope, credentials); // Prepare HTTP post
+            client.getParams().setAuthenticationPreemptive(true);
+            post.setDoAuthentication(true);
+
+            var entity = new this.StringRequestEntity(JSON.stringify(data), "application/json", null);
+            post.setRequestEntity(entity);
+
+			this.debug(JSON.stringify(data), 'debug');
+			var result = client.executeMethod(post);
+            var response = post.getResponseBodyAsString();
+            this.debug("Status: " + result + ", Response body: " + response, 'debug');
+		} catch(prxyEx) {
+			this.debug('ERROR in _makeJSONCall: ' + prxyEx, 'error');
+		}
+	},
+
+	getFileNameFromUrl: function( url ) {
+		try {
+			url = ""+url;
+			//remove any anchors
+			url = url.substring(0, (url.indexOf("#") == -1) ? url.length : url.indexOf("#"));
+			//remove any url parameters
+			url = url.substring(0, (url.indexOf("?") == -1) ? url.length : url.indexOf("?"));
+			//remove domain and path portions
+			url = url.substring(url.lastIndexOf("/") + 1, url.length);
+			return url;
+		} catch(ex) {
+			this.debug('ERROR in  getFileNameFromUrl: ' + ex, 'error');
+		}
+	},
+
+	_getInstanceConnectionURL: function() {
+		this.debug('Running _getInstanceConnectionURL...', 'debug');
+		var base = this.jiraBaseURL;
+		this.debug('Jira base: ' + base, 'debug');
+		var mid = "/rest/api/2/issue/";
+		var issue = this.jiraIssueNumber;
+		this.debug('Jira issue number: ' + issue, 'debug');
+		var end = "/attachments";
+		return base + mid + issue + end;
+	},
+
+	_encodeParam: function(k, v) {
+		return k + "=" + Packages.java.net.URLEncoder.encode(v);
+	},
+
+	_joinParams: function(base, arr) {
+		return base + '?' + arr.join('&');
+	},
+
+	_decryptParam: function(encPass) {
+		var e = new Packages.com.glide.util.Encrypter();
+		var unEncPass = e.decrypt(encPass);
+		return unEncPass;
+	},
+
+	_getURLConnection: function(url) {
+		if (ms.getConfigParameter("mid.proxy.use_proxy") == 'true') {
+			Packages.java.lang.System.setProperty("https.proxyHost", ms.getConfigParameter("mid.proxy.host"));
+			Packages.java.lang.System.setProperty("http.proxyHost", ms.getConfigParameter("mid.proxy.host"));
+			Packages.java.lang.System.setProperty("https.proxyPort", ms.getConfigParameter("mid.proxy.port"));
+			Packages.java.lang.System.setProperty("http.proxyPort", ms.getConfigParameter("mid.proxy.port"));
+		}
+		var conn = new Packages.java.net.URL(url).openConnection();
+		this.debug("Sending to : " + url, "debug");
+
+		var userpass = new Packages.java.lang.String(this.usernameJira + ":" +
+											this.passwordJira);
+		conn.setRequestProperty("X-Atlassian-Token", "nocheck");
+		conn.setRequestProperty("Content-Type", "multipart/form-data; boundary=" + this.boundary);
+		var basicAuth = "Basic " + 
+			(new Packages.javax.xml.bind.DatatypeConverter.printBase64Binary(userpass.getBytes()) + 
+			 '');
+		conn.setRequestProperty("Authorization", basicAuth);
+		conn.setDoOutput(true);
+		conn.setDoInput(true);
+		conn.setRequestMethod("POST");
+		conn.setUseCaches(false);
+		//conn.setRequestProperty("User-Agent", "ServiceNow MID Server POST");
+		return conn;
+	},
+
+	_getFile: function() {
+		//Get The File as Base64 and convert to ByteArrayInputStream
+		return new Packages.com.glide.util.StringUtil.base64DecodeAsBytes(this.encpayload);
+	},
+
+	_writeFile: function(conn, uploadFile) {  
+		var outputStream;
+		try {
+			outputStream = conn.getOutputStream();
+		} catch (e) {
+			this.debug('outputStream error: ' + e.message, 'error');
+		}
+		
+		var writer = new Packages.java.io.PrintWriter(
+			new Packages.java.io.OutputStreamWriter(outputStream, this.charset), true);
+		var fieldName = 'file'; // JIRA Requires this as 'file'
+		var fileName = this.fileName;
+
+		this.debug("Sending file : " + fileName, "debug");
+
+		writer.append("--" + this.boundary).append(this.LINE_FEED);
+		writer.append("Content-Disposition: form-data; name=\"" + fieldName + "\"; filename=\"" + fileName + "\"").append(this.LINE_FEED);
+		//Sometimes ServiceNow does not have the content type for a file (attempt to get it, otherwise default to octet-stream):
+		if (JSUtil.notNil(this.contentType)) {
+			writer.append("Content-Type: " + this.contentType).append(this.LINE_FEED);
+		} else if (JSUtil.notNil(Packages.java.net.URLConnection.guessContentTypeFromName(fileName))) {
+			writer.append("Content-Type: " +
+			Packages.java.net.URLConnection.guessContentTypeFromName(fileName)).append(this.LINE_FEED);
+		} else {
+			writer.append("Content-Type: application/octet-stream").append(this.LINE_FEED);
+		}
+		writer.append("Content-Transfer-Encoding: binary").append(this.LINE_FEED);
+		writer.append(this.LINE_FEED).flush();
+
+		this._writeFileData(uploadFile, outputStream);
+
+		writer.append(this.LINE_FEED).flush();
+		writer.append(this.LINE_FEED).flush();
+		writer.append("--" + this.boundary + "--").append(this.LINE_FEED);
+		writer.close();
+		var readResponse = "";
+		if (conn.getResponseCode() == 200) {
+			var reader = new Packages.java.io.BufferedReader(
+				new Packages.java.io.InputStreamReader(conn.getInputStream()));
+			var line = reader.readLine();
+			while (line != null) {
+				readResponse += line;
+				line = reader.readLine();
+			}
+		}
+		return conn.getResponseCode();
+	},
+
+	_writeFileData: function(uploadFile, outputStream) {
+		var inputStream = new Packages.java.io.ByteArrayInputStream(uploadFile);
+		var data = new Packages.java.lang.reflect.Array.newInstance(Packages.java.lang.Byte.TYPE, 4096);
+		var bytesRead = 0;
+		while ((bytesRead = inputStream.read(data)) != -1) {
+			outputStream.write(data, 0, bytesRead);
+			outputStream.flush();
+		}
+		inputStream.close();
+	},
+
+	_getFileMimeType: function (file) {
+		var extension = String(String(file).split(".").pop()).toLowerCase();
+		switch (extension) {
+			case "png":
+			return "image/png";
+			case "css":
+			return "text/css";
+			case "js":
+			return "text/javascript";
+			case "jpeg":
+			return "image/jpeg";
+			case "jpg":
+			return "image/jpeg";
+			case "gif":
+			return "image/gif";
+			case "html":
+			return "text/html";
+			case "txt":
+			//return "application/octet-stream";
+			return "text/plain";
+			case "xml":
+			return "text/xml";
+			case "json":
+			return "application/json";
+			case "mp4":
+			return "video/mp4";
+			case "mp3":
+			return "audio/mpeg";
+			case "ogg":
+			return "audio/ogg";
+			case "wav":
+			return "audio/vnd.wave";
+			case "zip":
+			return "application/zip";
+			case "gzip":
+			return "application/gzip";
+			case "exe":
+			return "application/octet-stream";
+			case "doc":
+			case "dot":
+			return "application/msword";
+			case "docx":
+			return "application/vnd.openxmlformats-officedocument.wordprocessingml.document";
+		}
+		
+		return false;
+	},
+
+	debug: function(message, logType) {
+		logType = logType || 'info';
+		var prefixStr = "*** MID Server Remote File";
+		if (logType == 'info' || logType == 'error') {
+			ms.log(prefixStr + " " + logType.toUpperCase() + "*** " + message);
+		}
+		if (this.debugFlag && logType == 'debug') {
+			ms.log(" DEBUG *** " + message);
+		}
+	},
+
+	type: 'JiraAttachments'
+};]]></script>
+        <sys_class_name>ecc_agent_script_include</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2019-03-27 15:43:05</sys_created_on>
+        <sys_domain>global</sys_domain>
+        <sys_domain_path>/</sys_domain_path>
+        <sys_id>b47cbc88376033005deedcc773990e89</sys_id>
+        <sys_mod_count>0</sys_mod_count>
+        <sys_name>JiraAttachments</sys_name>
+        <sys_overrides/>
+        <sys_package display_value="Jira Integration" source="x_303301_jira_inte">2473559d377323005deedcc773990ed8</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="Jira Integration">2473559d377323005deedcc773990ed8</sys_scope>
+        <sys_update_name>ecc_agent_script_include_b47cbc88376033005deedcc773990e89</sys_update_name>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2019-03-27 15:43:05</sys_updated_on>
+    </ecc_agent_script_include>
+</record_update>
