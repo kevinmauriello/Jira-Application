@@ -4,30 +4,26 @@
         <before>false</before>
         <description/>
         <flush_cache>false</flush_cache>
-        <name>Jira - Clear Todays Logs</name>
+        <name>Jira - Piorities</name>
         <record_for_rollback>false</record_for_rollback>
         <run_once>true</run_once>
-        <script><![CDATA[var sText = "";
-var grL = new GlideRecord('syslog');
-grL.addEncodedQuery("sys_created_onONToday@javascript:gs.beginningOfToday()@javascript:gs.endOfToday()");
-//^sys_scope.name=Jira Integration");
-grL.query();
-//grL.deleteMultiple();
-while (grL.next())
-	sText += grL.message + "\n";
-gs.info(sText);]]></script>
+        <script><![CDATA[var ji = new x_303301_jira_inte.JiraIntegration();
+var oData = ji._callREST('rest/api/2/priority', 'get', '','');
+ji.debug(JSON.stringify(oData));
+ji.sendToLog();
+]]></script>
         <sys_class_name>sys_script_fix</sys_class_name>
         <sys_created_by>admin</sys_created_by>
-        <sys_created_on>2019-03-28 19:52:50</sys_created_on>
-        <sys_id>a42f3a9437e033005deedcc773990e60</sys_id>
-        <sys_mod_count>4</sys_mod_count>
-        <sys_name>Jira - Clear Todays Logs</sys_name>
+        <sys_created_on>2019-03-29 14:06:18</sys_created_on>
+        <sys_id>7e89ba64372033005deedcc773990eb9</sys_id>
+        <sys_mod_count>0</sys_mod_count>
+        <sys_name>Jira - Piorities</sys_name>
         <sys_package display_value="Jira Integration" source="x_303301_jira_inte">2473559d377323005deedcc773990ed8</sys_package>
         <sys_policy/>
         <sys_scope display_value="Jira Integration">2473559d377323005deedcc773990ed8</sys_scope>
-        <sys_update_name>sys_script_fix_a42f3a9437e033005deedcc773990e60</sys_update_name>
+        <sys_update_name>sys_script_fix_7e89ba64372033005deedcc773990eb9</sys_update_name>
         <sys_updated_by>admin</sys_updated_by>
-        <sys_updated_on>2019-03-30 13:55:43</sys_updated_on>
+        <sys_updated_on>2019-03-29 14:06:18</sys_updated_on>
         <unloadable>false</unloadable>
     </sys_script_fix>
 </record_update>

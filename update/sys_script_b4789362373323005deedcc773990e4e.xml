@@ -31,23 +31,18 @@
         <rest_variables/>
         <role_conditions/>
         <script><![CDATA[(function executeRule(current, previous /*null when async*/) {
-	//name=incident^element=work_notes^element_id=bb6842c9f0252300964feeefe80ff008
 	var ji = new x_303301_jira_inte.JiraIntegration();
 
-	ji.debug('Jira - New Work Note');
 	try {
 		var grT = new GlideRecord(current.name);
 		if (grT.get(current.element_id)) {
 			if (!gs.nil(grT.correlation_id) &&
-				grT.correlation_display == 'Jira') {
-				var oComment = {};
-				oComment.body = current.value.replace('[code]','').replace('[/code]','');
-				var oData = ji._callREST('rest/api/2/issue/' + grT.correlation_id + '/comment', 'post', JSON.stringify(oComment),'');
-				ji.debug(JSON.stringify(oData));
+				grT.correlation_display == ji.correlation_display) {
+				ji.addCommentToJira(grT.correlation_id, current.value.replace('[code]','').replace('[/code]',''));
 			}
 		}
 	} catch(ex) {
-		ji.debug('business rule failed Jira - New Work Note: ' + ex);
+		ji.debug('ERROR in Jira - New Work Note (BR): ' + ex);
 	} finally {
 		ji.sendToLog();
 	}
@@ -59,7 +54,7 @@
         <sys_domain>global</sys_domain>
         <sys_domain_path>/</sys_domain_path>
         <sys_id>b4789362373323005deedcc773990e4e</sys_id>
-        <sys_mod_count>5</sys_mod_count>
+        <sys_mod_count>10</sys_mod_count>
         <sys_name>Jira - New Work Note</sys_name>
         <sys_overrides/>
         <sys_package display_value="Jira Integration" source="x_303301_jira_inte">2473559d377323005deedcc773990ed8</sys_package>
@@ -67,7 +62,7 @@
         <sys_scope display_value="Jira Integration">2473559d377323005deedcc773990ed8</sys_scope>
         <sys_update_name>sys_script_b4789362373323005deedcc773990e4e</sys_update_name>
         <sys_updated_by>admin</sys_updated_by>
-        <sys_updated_on>2019-02-26 15:06:15</sys_updated_on>
+        <sys_updated_on>2019-03-30 14:30:38</sys_updated_on>
         <template/>
         <when>after</when>
     </sys_script>

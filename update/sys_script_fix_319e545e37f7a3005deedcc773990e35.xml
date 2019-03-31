@@ -4,78 +4,33 @@
         <before>false</before>
         <description/>
         <flush_cache>false</flush_cache>
-        <name>Jira - Comments</name>
+        <name>Jira - Comments/WorkNotes</name>
         <record_for_rollback>false</record_for_rollback>
         <run_once>true</run_once>
         <script><![CDATA[test('7b3e4a7cf0212300964feeefe80ff04b');
 
 function test(sSysID) {
+	var ji = new x_303301_jira_inte.JiraIntegration();
 	var current = new GlideRecord('incident');
 	if (current.get(sSysID)) {
-		//processWorkNotes(current);
-		//addCommentToJira('IT-40');
-		test1(current);
-	}
-}
-function processWorkNotes(current) {
-	var grWN = new GlideRecord('sys_journal_field');
-	grWN.addEncodedQuery("element=work_notes" + 
-						 "^name=" + current.getTableName() +
-						 "^element_id=" + current.sys_id);
-	grWN.query();
-	while (grWN.next()) {
-		gs.info(grWN.value);
-	}
-}
-function getJiraComments(current) {
-	var ji = new x_303301_jira_inte.JiraIntegration();
-	try {
-		var oData = ji._callREST('rest/api/2/issue/' + current.correlation_id + '/comment', 'get', '','');
-		for (var i=0; i < oData.body.comments.length; i++) {
-			ji.debug(oData.body.comments[i].body.toString());
-		}
-		//ji.debug(JSON.stringify(oData));
-	} catch(ex) {
-		ji.debug('ERROR in getJiraComments ' + ex);
-	} finally {
-		ji.sendToLog();
-	}
-}
-function addCommentToJira(sKey) {
-	var ji = new x_303301_jira_inte.JiraIntegration();
-	try {
-		var oComment = {};
-		oComment.body = "this is a test comment from ServiceNow";
-		var oData = ji._callREST('rest/api/2/issue/' + sKey + '/comment', 'post', JSON.stringify(oComment),'');
-		ji.debug(JSON.stringify(oData));
-	} catch(ex) {
-		ji.debug('ERROR in getJiraComments ' + ex);
-	} finally {
-		ji.sendToLog();
-	}
-}
-function test1(current) {
-	var ji = new x_303301_jira_inte.JiraIntegration();
-	try {
 		ji.processWorkNotes(current, current.correlation_id);
-	} catch(ex) {
-		ji.debug('ERROR ' + ex);
-	} finally {
-		ji.sendToLog();
 	}
-}]]></script>
+	gs.info(ji.logText);
+	ji.sendToLog();
+}
+]]></script>
         <sys_class_name>sys_script_fix</sys_class_name>
         <sys_created_by>admin</sys_created_by>
         <sys_created_on>2019-02-25 06:33:31</sys_created_on>
         <sys_id>319e545e37f7a3005deedcc773990e35</sys_id>
-        <sys_mod_count>14</sys_mod_count>
-        <sys_name>Jira - Comments</sys_name>
+        <sys_mod_count>18</sys_mod_count>
+        <sys_name>Jira - Comments/WorkNotes</sys_name>
         <sys_package display_value="Jira Integration" source="x_303301_jira_inte">2473559d377323005deedcc773990ed8</sys_package>
         <sys_policy/>
         <sys_scope display_value="Jira Integration">2473559d377323005deedcc773990ed8</sys_scope>
         <sys_update_name>sys_script_fix_319e545e37f7a3005deedcc773990e35</sys_update_name>
         <sys_updated_by>admin</sys_updated_by>
-        <sys_updated_on>2019-02-25 20:01:11</sys_updated_on>
+        <sys_updated_on>2019-03-29 14:43:11</sys_updated_on>
         <unloadable>false</unloadable>
     </sys_script_fix>
 </record_update>

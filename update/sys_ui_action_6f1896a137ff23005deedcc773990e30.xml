@@ -38,6 +38,7 @@ try {
 		current.correlation_id = oJSON.body.key.toString();
 		current.correlation_display = 'Jira';
 		//processAttachments(current);
+		current.setWorkflow(false);
 		current.update();
 		gs.addInfoMessage('Jira Record Saved - ' + oJSON.body.key.toString());
 	} else {
@@ -84,7 +85,7 @@ function processAttachments(grNew) {
         <sys_domain>global</sys_domain>
         <sys_domain_path>/</sys_domain_path>
         <sys_id>6f1896a137ff23005deedcc773990e30</sys_id>
-        <sys_mod_count>11</sys_mod_count>
+        <sys_mod_count>12</sys_mod_count>
         <sys_name>Create Jira Issue</sys_name>
         <sys_overrides/>
         <sys_package display_value="Jira Integration" source="x_303301_jira_inte">2473559d377323005deedcc773990ed8</sys_package>
@@ -92,7 +93,7 @@ function processAttachments(grNew) {
         <sys_scope display_value="Jira Integration">2473559d377323005deedcc773990ed8</sys_scope>
         <sys_update_name>sys_ui_action_6f1896a137ff23005deedcc773990e30</sys_update_name>
         <sys_updated_by>admin</sys_updated_by>
-        <sys_updated_on>2019-03-28 02:43:51</sys_updated_on>
+        <sys_updated_on>2019-03-30 14:37:30</sys_updated_on>
         <table>incident</table>
         <ui11_compatible>true</ui11_compatible>
         <ui16_compatible>false</ui16_compatible>

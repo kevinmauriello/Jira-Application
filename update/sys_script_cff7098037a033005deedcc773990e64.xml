@@ -12,7 +12,7 @@
         <change_fields>false</change_fields>
         <client_callable>false</client_callable>
         <collection>sys_attachment</collection>
-        <condition/>
+        <condition>gs.getSession().isInteractive() &amp;&amp; gs.getProperty("x_303301_jira_inte.enabled")=="true" </condition>
         <description/>
         <execute_function>false</execute_function>
         <filter_condition/>
@@ -30,18 +30,18 @@
         <script><![CDATA[(function executeRule(current, previous /*null when async*/) {
 
 	var ji = new x_303301_jira_inte.JiraIntegration();
+	ji.debug("started Add Attachment To Jira");
 	try {
 		var sTable = current.table_name;
 		var sSysID = current.table_sys_id;
 		var grData = new GlideRecord(sTable);
 		if (grData.get(sSysID)) {
-			if (grData.correlation_display == "Jira" &&
+			if (grData.correlation_display == ji.correlation_display &&
 				!gs.nil(grData.correlation_id)) {
 				ji.debug("jira synced record");
 				ji.addAttachmentToJira(current, grData);
 			}
-		} else
-			ji.debug("not a jira synced record");
+		}
 	} catch(ex) {
 		ji.debug("Attachment BR ERROR: " + ex);
 	} finally {
@@ -55,7 +55,7 @@
         <sys_domain>global</sys_domain>
         <sys_domain_path>/</sys_domain_path>
         <sys_id>cff7098037a033005deedcc773990e64</sys_id>
-        <sys_mod_count>8</sys_mod_count>
+        <sys_mod_count>11</sys_mod_count>
         <sys_name>Add Attachment To Jira</sys_name>
         <sys_overrides/>
         <sys_package display_value="Jira Integration" source="x_303301_jira_inte">2473559d377323005deedcc773990ed8</sys_package>
@@ -63,7 +63,7 @@
         <sys_scope display_value="Jira Integration">2473559d377323005deedcc773990ed8</sys_scope>
         <sys_update_name>sys_script_cff7098037a033005deedcc773990e64</sys_update_name>
         <sys_updated_by>admin</sys_updated_by>
-        <sys_updated_on>2019-03-28 02:42:28</sys_updated_on>
+        <sys_updated_on>2019-03-30 01:23:28</sys_updated_on>
         <template/>
         <when>after</when>
     </sys_script>
